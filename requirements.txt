@@ -1,0 +1,3 @@
+
+
+pip install Flask pymongo python-dotenv
