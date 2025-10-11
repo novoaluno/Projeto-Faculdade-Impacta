@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{% if produto %}Editar Produto{% else %}Adicionar Novo Produto{% endif %}</h1>
+    <form method="POST">
+        <label for="nome">Nome do Produto:</label>
+        <input type="text" id="nome" name="nome" value="{{ produto.nome if produto else '' }}" required>
+
+        <label for="descricao">Descrição:</label>
+        <textarea id="descricao" name="descricao" rows="4">{{ produto.descricao if produto else '' }}</textarea>
+
+        <label for="preco">Preço (R$):</label>
+        <input type="number" step="0.01" id="preco" name="preco" value="{{ produto.preco if produto else '' }}" required>
+
+        <label for="quantidade">Quantidade em Estoque:</label>
+        <input type="number" id="quantidade" name="quantidade" min="0" value="{{ produto.quantidade if produto else '0' }}" required>
+
+        <button type="submit">Salvar</button>
+    </form>
+{% endblock %}
