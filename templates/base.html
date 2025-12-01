@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-R-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Projeto</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -16,10 +16,20 @@
                 <hr>
                 <li><a href="{{ url_for('listar_produtos') }}">Listar Produtos</a></li>
                 <li><a href="{{ url_for('add_produto') }}">Adicionar Produto</a></li>
-            </ul>
+                <hr> <li><a href="{{ url_for('listar_pedidos') }}">Listar Pedidos</a></li> <li><a href="{{ url_for('add_pedido') }}">Adicionar Pedido</a></li> </ul>
         </aside>
 
         <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <ul class=flashes>
+                {% for category, message in messages %}
+                  <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+            
             {% block content %}{% endblock %}
         </main>
     </div>

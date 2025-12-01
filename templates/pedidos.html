@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Lista de Pedidos</h1>
+
+    <!-- BLOCO DE FILTRO -->
+    <div style="background-color: #f8f9fa; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+        <form action="{{ url_for('listar_pedidos') }}" method="GET" style="margin: 0; flex-direction: row; align-items: center; width: auto;">
+            <label for="status" style="margin-right: 10px; font-weight: bold; margin-bottom: 0;">Filtrar por Status:</label>
+            <select name="status" id="status" onchange="this.form.submit()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; width: auto;">
+                <option value="Todos" {% if filtro_atual == 'Todos' or not filtro_atual %}selected{% endif %}>Todos os Pedidos</option>
+                <option value="Pendente" {% if filtro_atual == 'Pendente' %}selected{% endif %}>⏳ Pendente</option>
+                <option value="Em Trânsito" {% if filtro_atual == 'Em Trânsito' %}selected{% endif %}>🚚 Em Trânsito</option>
+                <option value="Entregue" {% if filtro_atual == 'Entregue' %}selected{% endif %}>✅ Entregue</option>
+                <option value="Cancelado" {% if filtro_atual == 'Cancelado' %}selected{% endif %}>❌ Cancelado</option>
+            </select>
+        </form>
+        <span style="color: #666; font-size: 0.9em;">
+            Mostrando <strong>{{ pedidos|length }}</strong> pedido(s)
+        </span>
+    </div>
+
+    {% if pedidos %}
+        <table style="font-size: 0.9em;">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Data / Cliente</th>
+                    <th style="width: 35%;">Detalhes / Endereço</th>
+                    <th style="width: 25%;">Status da Entrega</th>
+                    <th style="width: 20%;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                    <tr>
+                        <!-- Coluna 1: Info Básica -->
+                        <td style="vertical-align: top;">
+                            <div style="font-size: 1.1em; font-weight: bold;">{{ pedido.data_criacao.strftime('%d/%m/%Y') }}</div>
+                            <div style="color: #666;">{{ pedido.data_criacao.strftime('%H:%M') }}</div>
+                            <hr style="border-top: 1px solid #eee;">
+                            <div>Cliente: <strong>{{ pedido.cliente_nome }}</strong></div>
+                        </td>
+
+                        <!-- Coluna 2: Detalhes e Endereço -->
+                        <td style="vertical-align: top;">
+                            <strong>Itens:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px; font-size: 0.95em;">
+                                {% for item in pedido.produtos %}
+                                    <li>{{ item.quantidade }}x {{ item.nome }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div style="margin-top: 5px;"><strong>Total: R$ {{ "%.2f"|format(pedido.total_pedido) }}</strong></div>
+                            
+                            <hr style="margin: 10px 0; border-top: 1px dashed #ccc;">
+                            
+                            <div style="background-color: #fcfcfc; padding: 5px; border: 1px solid #eee; border-radius: 4px;">
+                                <strong style="font-size: 0.9em; color: #555;">📍 Entregar em:</strong><br>
+                                {% if pedido.endereco_entrega %}
+                                    {{ pedido.endereco_entrega.logradouro }}, {{ pedido.endereco_entrega.numero }}<br>
+                                    <small>{{ pedido.endereco_entrega.bairro }} - {{ pedido.endereco_entrega.cidade }}</small>
+                                {% else %}
+                                    <span style="color: #999;">Retirada no Local</span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Coluna 3: Gerenciamento de Status -->
+                        <td style="vertical-align: top;">
+                            {% set st = pedido.status_entrega if pedido.status_entrega else 'Pendente' %}
+                            
+                            <div style="margin-bottom: 10px; padding: 6px; 
+                                border-radius: 4px; text-align: center; font-weight: bold; border: 1px solid rgba(0,0,0,0.1);
+                                {% if st == 'Entregue' %}background-color: #d4edda; color: #155724;
+                                {% elif st == 'Em Trânsito' %}background-color: #fff3cd; color: #856404;
+                                {% elif st == 'Cancelado' %}background-color: #f8d7da; color: #721c24;
+                                {% else %}background-color: #e2e3e5; color: #383d41;{% endif %}">
+                                {{ st }}
+                            </div>
+
+                            <div style="display: flex; gap: 5px; justify-content: center;">
+                                {% if st != 'Em Trânsito' and st != 'Entregue' %}
+                                    <a href="{{ url_for('update_status_pedido', id=pedido._id, novo_status='Em Trânsito') }}" 
+                                       style="font-size: 0.8em; padding: 5px 10px; background: #ffc107; color: #333; text-decoration: none; border-radius: 3px; border: 1px solid #e0a800;">
+                                       🚚 Enviar
+                                    </a>
+                                {% endif %}
+                                
+                                {% if st != 'Entregue' %}
+                                    <a href="{{ url_for('update_status_pedido', id=pedido._id, novo_status='Entregue') }}" 
+                                       style="font-size: 0.8em; padding: 5px 10px; background: #28a745; color: white; text-decoration: none; border-radius: 3px; border: 1px solid #218838;">
+                                       ✅ Recebido
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Coluna 4: Deletar -->
+                        <td style="vertical-align: middle; text-align: center;">
+                            <a href="{{ url_for('delete_pedido', id=pedido._id) }}" 
+                               onclick="return confirm('Tem certeza? O estoque será restaurado.')"
+                               style="color: #dc3545; font-weight: bold;">
+                               🗑 Deletar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: #666;">
+            <h3>Nenhum pedido encontrado.</h3>
+            {% if filtro_atual and filtro_atual != 'Todos' %}
+                <p>Tente mudar o filtro de status.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <br>
+    <a href="{{ url_for('add_pedido') }}" class="button" style="display: block; text-align: center; max-width: 200px; margin: 0 auto;">+ Novo Pedido</a>
+{% endblock %}
