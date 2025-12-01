@@ -102,3 +102,26 @@ button {
     cursor: pointer;
     border-radius: 4px;
 }
+
+
+.flashes {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+.flashes li {
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.flashes li.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+.flashes li.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
